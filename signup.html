@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign up - Pulse Analytics</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-logo">
+        <div class="logo-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <path d="M4 12h4l3-8 4 16 3-8h4" stroke="url(#logo-grad)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <defs><linearGradient id="logo-grad" x1="4" y1="12" x2="22" y2="12"><stop stop-color="#06b6d4"/><stop offset="1" stop-color="#3b82f6"/></linearGradient></defs>
+          </svg>
+        </div>
+        <span>Pulse</span>
+      </a>
+      <div class="nav-links">
+        <a href="index.html#features">Features</a>
+        <a href="pricing.html">Pricing</a>
+        <a href="#" class="docs-link">Docs</a>
+      </div>
+      <div class="nav-actions">
+        <a href="login.html" class="btn-text">Log in</a>
+        <a href="signup.html" class="btn-primary btn-sm active">Start Free</a>
+      </div>
+      <button class="mobile-menu-btn" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <div class="mobile-nav">
+    <a href="index.html#features">Features</a>
+    <a href="pricing.html">Pricing</a>
+    <a href="#" class="docs-link">Docs</a>
+    <a href="login.html">Log in</a>
+    <a href="signup.html" class="btn-primary btn-sm">Start Free</a>
+  </div>
+
+  <main>
+    <section class="auth-page">
+      <div class="auth-card animate-on-scroll">
+        <h1>Create your account</h1>
+        <p class="auth-subtitle">Start with 10,000 free events per month</p>
+
+        <div id="auth-error" class="auth-error" hidden></div>
+
+        <button class="btn-google" id="google-signup">
+          <svg width="18" height="18" viewBox="0 0 18 18">
+            <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 01-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/>
+            <path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 009 18z" fill="#34A853"/>
+            <path d="M3.964 10.71A5.41 5.41 0 013.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 000 9s0 1.452.957 4.042l3.007-2.332z" fill="#FBBC05"/>
+            <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 00.957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z" fill="#EA4335"/>
+          </svg>
+          Continue with Google
+        </button>
+
+        <div class="auth-divider">
+          <span>or</span>
+        </div>
+
+        <form id="signup-form" class="auth-form">
+          <div class="form-group">
+            <label for="name">Full name</label>
+            <input type="text" id="name" placeholder="Jane Smith" required autocomplete="name">
+          </div>
+          <div class="form-group">
+            <label for="email">Work email</label>
+            <input type="email" id="email" placeholder="you@company.com" required autocomplete="email">
+          </div>
+          <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" placeholder="At least 8 characters" required minlength="8" autocomplete="new-password">
+          </div>
+          <button type="submit" class="btn-primary auth-submit" id="submit-btn">
+            Create account <span class="arrow">&rarr;</span>
+          </button>
+        </form>
+
+        <p class="auth-footer">
+          Already have an account? <a href="login.html">Log in</a>
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+  <script type="module">
+    import { signUpWithEmail, logInWithGoogle, redirectIfLoggedIn } from './auth.js';
+
+    redirectIfLoggedIn();
+
+    document.getElementById('signup-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const errEl = document.getElementById('auth-error');
+      const btn = document.getElementById('submit-btn');
+      errEl.hidden = true;
+      btn.disabled = true;
+      btn.innerHTML = 'Creating account\u2026';
+
+      try {
+        await signUpWithEmail(
+          document.getElementById('email').value,
+          document.getElementById('password').value,
+          document.getElementById('name').value
+        );
+        window.location.href = 'dashboard.html';
+      } catch (err) {
+        errEl.textContent = friendlyError(err.code);
+        errEl.hidden = false;
+        btn.disabled = false;
+        btn.innerHTML = 'Create account <span class="arrow">&rarr;</span>';
+      }
+    });
+
+    document.getElementById('google-signup').addEventListener('click', async () => {
+      try {
+        await logInWithGoogle();
+        window.location.href = 'dashboard.html';
+      } catch (err) {
+        const errEl = document.getElementById('auth-error');
+        errEl.textContent = friendlyError(err.code);
+        errEl.hidden = false;
+      }
+    });
+
+    function friendlyError(code) {
+      const map = {
+        'auth/email-already-in-use': 'An account with that email already exists.',
+        'auth/weak-password': 'Password must be at least 8 characters.',
+        'auth/invalid-email': 'Please enter a valid email address.',
+        'auth/popup-closed-by-user': 'Sign-in popup was closed.',
+        'auth/api-key-not-valid.-please-pass-a-valid-api-key.': 'Firebase is not configured. See auth.js to add your project credentials.',
+      };
+      return map[code] || 'Something went wrong. Please try again.';
+    }
+  </script>
+</body>
+</html>
