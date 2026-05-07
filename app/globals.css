@@ -1104,3 +1104,8 @@ a {
     grid-column: span 1;
   }
 }
+
+/* Next.js: Inter from next/font (see app/layout.tsx --font-inter) */
+body {
+  font-family: var(--font-inter), var(--font);
+}
